@@ -22,6 +22,7 @@
 
       <template v-slot:header="props">
         <q-tr :props="props">
+          <q-th auto-width />
           <q-th
             v-for="col in props.cols"
             :key="col.name"
@@ -34,6 +35,9 @@
 
       <template v-slot:body="props">
         <q-tr :props="props" :data-id="props.row.index + 1000">
+          <q-td auto-width style="cursor: move">
+            <q-icon name="dehaze" />
+          </q-td>
           <q-td
             v-for="col in props.cols"
             :key="col.name"
@@ -53,6 +57,8 @@ import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import draggable from 'vuedraggable'
 import Sortable from "sortablejs";
+import Vue from 'vue';
+
 
 // const columns = [
 //   {
@@ -117,7 +123,6 @@ export default {
       });
     }
 
-
     function setRowsNumberCount ($count) {
       pagination.value.rowsNumber = $count;
     }
@@ -131,7 +136,7 @@ export default {
       // calculate starting row of data
       const startRow = (page - 1) * rowsPerPage
 
-      fetchFromServer(startRow, fetchCount, filter, sortBy, descending).then((returnedData)=>{
+      fetchFromServer(startRow, fetchCount, filter, sortBy, descending).then((returnedData) => {
         columns.value = [
           {
             name: 'index',
@@ -142,6 +147,7 @@ export default {
           { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
           { name: 'preview_text', align: 'left',  label: 'Short text', field: 'preview_text', sortable: true },
         ];
+
         rows.value = returnedData
         // don't forget to update local pagination object
         pagination.value.page = page
@@ -152,10 +158,6 @@ export default {
       })
     }
 
-    function onKeyDown (e) {
-      console.log(e)
-    }
-
     onMounted(() => {
       // get initial data from server (1st page)
       onRequest({
@@ -163,11 +165,24 @@ export default {
         filter: undefined
       })
       const element = document.querySelector("#table-draggable tbody");
-      const sortable = Sortable.create(element, {
+      Sortable.create(element, {
+        animation: 200,
         onEnd(event) {
           const id = event.item.getAttribute('data-id')
-          const prevElementId = event.item.previousElementSibling.getAttribute('data-id')
-          const nextElementId = event.item.nextElementSibling.getAttribute('data-id');
+          const prevElementId = event.item.previousElementSibling
+              ? event.item.previousElementSibling.getAttribute('data-id')
+              : null;
+          const nextElementId = event.item.nextElementSibling
+              ? event.item.nextElementSibling.getAttribute('data-id')
+              : null;
+
+          if (prevElementId || nextElementId) {
+            console.log('sent ajax request');
+            onRequest({
+              pagination: pagination.value,
+              filter: filter.value
+            });
+          }
           console.log(id, prevElementId, nextElementId);
         }
       });
@@ -180,7 +195,6 @@ export default {
       columns,
       rows,
       onRequest,
-      onKeyDown
     }
   }
 }
