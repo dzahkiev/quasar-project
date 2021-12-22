@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-table
-      title="BMSTU News"
+      :title="settings.title"
       :rows="rows"
       :columns="columns"
       row-key="index"
@@ -22,7 +22,7 @@
 
       <template v-slot:header="props">
         <q-tr :props="props">
-          <q-th auto-width />
+          <q-th v-if="settings.sortable" auto-width />
           <q-th
             v-for="col in props.cols"
             :key="col.name"
@@ -35,7 +35,7 @@
 
       <template v-slot:body="props">
         <q-tr :props="props" :data-id="props.row.index + 1000">
-          <q-td auto-width style="cursor: move">
+          <q-td v-if="settings.sortable" auto-width style="cursor: move">
             <q-icon name="dehaze" />
           </q-td>
           <q-td
@@ -57,38 +57,6 @@ import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import draggable from 'vuedraggable'
 import Sortable from "sortablejs";
-import Vue from 'vue';
-
-
-// const columns = [
-//   {
-//     name: 'desc',
-//     required: true,
-//     label: 'Dessert (100g serving)',
-//     align: 'left',
-//     field: 'name',
-//     format: val => `${val}`,
-//     sortable: true
-//   },
-//   { name: 'calories', align: 'center', label: 'Calories', field: 'calories', sortable: true },
-//   { name: 'fat', label: 'Fat (g)', field: 'fat', sortable: true },
-//   { name: 'carbs', label: 'Carbs (g)', field: 'carbs', sortable: true },
-//   { name: 'protein', label: 'Protein (g)', field: 'protein', sortable: true },
-//   { name: 'sodium', label: 'Sodium (mg)', field: 'sodium', sortable: true },
-//   { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) },
-//   { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) }
-// ]
-
-const columns = [
-  {
-    name: 'index',
-    label: '#',
-    align: 'left',
-    field: 'index',
-  },
-  { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
-  { name: 'preview_text', align: 'left',  label: 'Short text', field: 'preview_text', sortable: true },
-]
 
 export default {
   components: {draggable},
@@ -97,6 +65,10 @@ export default {
     const rows = ref([])
     const filter = ref('')
     const loading = ref(false)
+    const settings = ref({
+      sortable: false,
+      title: "Список"
+    });
     const pagination = ref({
       sortBy: 'desc',
       descending: false,
@@ -127,16 +99,15 @@ export default {
       pagination.value.rowsNumber = $count;
     }
 
-    function onRequest (props) {
+    async function onRequest (props) {
       const { page, rowsPerPage, sortBy, descending } = props.pagination
       const filter = props.filter
 
       loading.value = true
       const fetchCount = rowsPerPage === 0 ? 100 : rowsPerPage;
-      // calculate starting row of data
       const startRow = (page - 1) * rowsPerPage
 
-      fetchFromServer(startRow, fetchCount, filter, sortBy, descending).then((returnedData) => {
+      return fetchFromServer(startRow, fetchCount, filter, sortBy, descending).then((returnedData) => {
         columns.value = [
           {
             name: 'index',
@@ -149,35 +120,41 @@ export default {
         ];
 
         rows.value = returnedData
-        // don't forget to update local pagination object
         pagination.value.page = page
         pagination.value.rowsPerPage = rowsPerPage
         pagination.value.sortBy = sortBy
         pagination.value.descending = descending
+        settings.value = Object.assign(settings.value, {
+          sortable: true,
+          title: "Новости"
+        });
         loading.value = false
+        console.log(settings.value)
       })
     }
 
-    onMounted(() => {
-      // get initial data from server (1st page)
-      onRequest({
-        pagination: pagination.value,
-        filter: undefined
-      })
+    function initSortable()
+    {
+      console.log(settings.value)
+      if (settings.value.sortable === false) return;
       const element = document.querySelector("#table-draggable tbody");
       Sortable.create(element, {
         animation: 200,
         onEnd(event) {
           const id = event.item.getAttribute('data-id')
           const prevElementId = event.item.previousElementSibling
-              ? event.item.previousElementSibling.getAttribute('data-id')
-              : null;
+            ? event.item.previousElementSibling.getAttribute('data-id')
+            : null;
           const nextElementId = event.item.nextElementSibling
-              ? event.item.nextElementSibling.getAttribute('data-id')
-              : null;
+            ? event.item.nextElementSibling.getAttribute('data-id')
+            : null;
 
           if (prevElementId || nextElementId) {
-            console.log('sent ajax request');
+            dropdownRequest({
+              id: id,
+              prevId: prevElementId,
+              nextId: nextElementId
+            });
             onRequest({
               pagination: pagination.value,
               filter: filter.value
@@ -186,9 +163,35 @@ export default {
           console.log(id, prevElementId, nextElementId);
         }
       });
+    }
+
+    /**
+     * Сортировка таблицы
+     *
+     * @param params
+     * @returns {Promise<*>}
+     */
+    async function dropdownRequest(params) {
+      return await api.post('/dropdown', params)
+        .then((response) => {
+          return response.data;
+        })
+        .catch(() => {
+          console.log('Dropdown data error');
+        });
+    }
+
+    onMounted(() => {
+      // get initial data from server (1st page)
+      onRequest({
+        pagination: pagination.value,
+        filter: undefined
+      })
+      .then(() => initSortable())
     })
 
     return {
+      settings,
       filter,
       loading,
       pagination,
