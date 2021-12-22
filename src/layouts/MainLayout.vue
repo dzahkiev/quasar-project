@@ -55,6 +55,11 @@ const linksList = [
     icon: 'list',
     link: 'table'
   },
+  {
+    title: 'Загрузка файлов',
+    icon: 'list',
+    link: 'upload'
+  },
 ];
 
 import { defineComponent, ref } from 'vue'
