@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-uploader
-      style="width: 100%; min-height: 330px"
+      class="q-uploader"
       :url="getUrl()"
       label="Max number of files (10)"
       multiple
@@ -11,8 +11,6 @@
       auto-upload
       hide-upload-btn
       :files="files"
-      draggable="false"
-      v-on:dragstart="dragStart"
     >
       <template v-slot:list="scope">
         <div
@@ -120,10 +118,6 @@ export default {
 
       console.log(log);
     },
-    dragStart(e) {
-      console.log(e)
-    //  e.preventDefault()
-    }
   },
   mounted: function() {
     console.log('init sort');
@@ -162,7 +156,12 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="sass" >
+.q-uploader
+  width: 100%
+  &__dnd
+    margin-top: 55px
+
 .my-card
   max-width: 250px
   min-width: 230px
@@ -181,8 +180,6 @@ export default {
   .break-all
     word-break: break-all
 
-.q-uploader
-  .dnd
-    margin-top: 55px
+
 
 </style>
