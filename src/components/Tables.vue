@@ -55,11 +55,9 @@
 /* eslint-disable */
 import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
-import draggable from 'vuedraggable'
 import Sortable from "sortablejs";
 
 export default {
-  components: {draggable},
   setup () {
     const columns = ref([])
     const rows = ref([])
