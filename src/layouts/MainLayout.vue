@@ -60,6 +60,17 @@ const linksList = [
     icon: 'list',
     link: 'upload'
   },
+  {
+    title: 'Выпадающий список',
+    icon: 'list',
+    link: 'select'
+  },
+  {
+    title: 'Выпадающий список',
+    caption: 'список с динамической подгрузкой',
+    icon: 'list',
+    link: 'lazyselect'
+  },
 ];
 
 import { defineComponent, ref } from 'vue'

@@ -8,6 +8,8 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/Index.vue') },
       { path: 'table', component: () => import('components/Tables.vue') },
       { path: 'upload', component: () => import('components/FileUploader.vue') },
+      { path: 'select', component: () => import('components/Select.vue') },
+      { path: 'lazyselect', component: () => import('components/DynamicSelect.vue') },
     ],
   },
   // {
