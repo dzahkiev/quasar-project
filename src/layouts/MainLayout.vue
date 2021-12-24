@@ -20,23 +20,38 @@
     </q-header>
 
     <q-drawer
-      v-model="leftDrawerOpen"
       show-if-above
-      bordered
+      :mini="leftDrawerOpen"
+      :breakpoint="400"
+      @click.capture="drawerClick"
     >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+      <q-img
+        class="absolute-top"
+        src="https://cdn.quasar.dev/img/material.png"
+        :style="{height: !leftDrawerOpen ? '150px' : '50px', position: 'relative'}"
+      >
+        <div v-show="!leftDrawerOpen" class="absolute-bottom bg-transparent">
+          <q-avatar size="56px" class="q-mb-sm">
+            <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+          </q-avatar>
+          <div class="text-weight-bold">Admin Admin</div>
+          <div>admin@chulakov.ru</div>
+        </div>
+      </q-img>
+        <q-list>
+          <q-item-label
+            header
+          >
+            Меню
+          </q-item-label>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+          <EssentialLink
+            v-for="link in essentialLinks"
+            :key="link.title"
+            v-bind="link"
+          />
+        </q-list>
+
     </q-drawer>
 
     <q-page-container>
@@ -45,7 +60,9 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script>
+/* eslint-disable */
+
 import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [
@@ -84,12 +101,20 @@ export default defineComponent({
 
   setup () {
     const leftDrawerOpen = ref(false)
+    const miniState = ref(false)
 
     return {
       essentialLinks: linksList,
       leftDrawerOpen,
+      miniState,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
+      },
+      drawerClick (e) {
+        if (miniState.value) {
+          miniState.value = false
+          e.stopPropagation()
+        }
       }
     }
   }
