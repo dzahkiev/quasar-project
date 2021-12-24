@@ -61,7 +61,6 @@ import {useQuasar} from 'quasar'
 import {api} from 'boot/axios'
 import Sortable from "sortablejs";
 
-
 const filesDefault = [
   {
     "src": "http://placeimg.com/640/480",
@@ -96,7 +95,7 @@ export default {
       return `http://localhost:4444/upload`
     },
     async deleteFile(removed) {
-      return await api.post('/delete', {id: removed.id})
+      return await api.post('/upload/delete', {id: removed.id})
         .then(response => {
           if (response.statusCode === 200) {
             this.files = this.files.filter((item) => item.id !== removed.id);
@@ -109,10 +108,36 @@ export default {
           })
         });
     },
-    reorder: function(event) {
-      var oldIndex = event.oldIndex,
-        newIndex = event.newIndex;
-      console.log(oldIndex, newIndex);
+    reorder: async function(event) {
+      const id = event.item.getAttribute('data-id')
+      const prevElementId = event.item.previousElementSibling
+        ? event.item.previousElementSibling.getAttribute('data-id')
+        : null;
+      const nextElementId = event.item.nextElementSibling
+        ? event.item.nextElementSibling.getAttribute('data-id')
+        : null;
+
+      console.log({
+        id: id,
+        prevId: prevElementId,
+        nextId: nextElementId
+      });
+      return await api.post('/upload/reorder', {
+          id: id,
+          prevId: prevElementId,
+          nextId: nextElementId
+        })
+        .then(response => {
+          if (response.statusCode === 200) {
+            this.files = this.files.filter((item) => item.id !== id);
+          }
+        })
+        .catch(() => {
+          this.q.notify({
+            type: 'negative',
+            message: 'File did not reordered'
+          })
+        });
     },
     log(log) {
 
@@ -124,8 +149,6 @@ export default {
     this.$nextTick(function () {
       Sortable.create(document.getElementById('sortable'), {
         draggable: ".q-card",
-        swapThreshold: 10,
-        direction: 'horizontal',
         animation: 200,
         onUpdate: this.reorder.bind(this),
       });
@@ -179,7 +202,4 @@ export default {
 
   .break-all
     word-break: break-all
-
-
-
 </style>
