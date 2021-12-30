@@ -21,6 +21,8 @@
         style="width: 250px"
         emit-value
         map-options
+        use-chips
+        @add="changeSelect"
       />
 
       <q-select
@@ -67,6 +69,11 @@ const defaultOptions = [
   ];
 
 export default {
+  methods: {
+    changeSelect(e) {
+      console.log(e);
+    }
+  },
   name: 'Select',
   setup() {
     return {

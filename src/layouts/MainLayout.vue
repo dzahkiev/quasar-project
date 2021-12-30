@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
+      <q-toolbar style="background-color: white" class="text-dark">
         <q-btn
           flat
           dense
@@ -12,7 +12,11 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          <q-breadcrumbs style="font-size: 16px">
+            <q-breadcrumbs-el label="Home" icon="home" />
+            <q-breadcrumbs-el label="Components" icon="widgets" />
+            <q-breadcrumbs-el label="Toolbar" />
+          </q-breadcrumbs>
         </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>
@@ -24,6 +28,7 @@
       :mini="leftDrawerOpen"
       :breakpoint="400"
       @click.capture="drawerClick"
+      bordered
     >
       <q-img
         class="absolute-top"
